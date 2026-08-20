@@ -1,0 +1,73 @@
+{
+  "name": "HAP Daily Continuity Snapshot",
+  "trigger": {
+    "type": "cron",
+    "schedule": "0 3 * * *",
+    "timezone": "America/New_York"
+  },
+  "variables": {
+    "snapshot_date": "{{$now.format('YYYY-MM-DD')}}",
+    "snapshot_root": "~/HAP_Continuity_Shelter/12_EXPORTS_AND_SNAPSHOTS/{{$snapshot_date}}",
+    "vault_root": "~/HAP_Continuity_Shelter",
+    "drive_enabled": false,
+    "git_enabled": false
+  },
+  "steps": [
+    {
+      "id": "make_snapshot_dirs",
+      "type": "filesystem.mkdir",
+      "paths": [
+        "{{$snapshot_root}}/00_manifest",
+        "{{$snapshot_root}}/01_active_current_state",
+        "{{$snapshot_root}}/02_voice_and_tkncde",
+        "{{$snapshot_root}}/03_ui_failure_evidence",
+        "{{$snapshot_root}}/04_tri_node_matrix",
+        "{{$snapshot_root}}/05_workflows",
+        "{{$snapshot_root}}/99_quarantine_index_only"
+      ]
+    },
+    {
+      "id": "copy_priority_files",
+      "type": "filesystem.copy",
+      "source_paths": [
+        "{{$vault_root}}/00_START_HERE/README_CURRENT_STATE.md",
+        "{{$vault_root}}/01_ACTIVE_INSTRUCTIONS/TKNCDE_ACTIVE.md",
+        "{{$vault_root}}/01_ACTIVE_INSTRUCTIONS/CURRENT_TOOL_RESTRICTIONS.md",
+        "{{$vault_root}}/02_TRISTAN_VOICE/VOICE_BIBLE_ACTIVE_TARGET.md",
+        "{{$vault_root}}/03_CURRENT_CONTINUITY/CURRENT_PROJECT_STATE.md",
+        "{{$vault_root}}/04_SOURCE_HIERARCHY/SOURCE_STACK_ORDER.md",
+        "{{$vault_root}}/06_UI_FAILURE_EVIDENCE/UI_FAILURE_LOG.md",
+        "{{$vault_root}}/07_MIGRATION_SAFEGUARDS/TRISTAN_CONTINUITY_SHELTER_SELF_NOTE.md",
+        "{{$vault_root}}/07_MIGRATION_SAFEGUARDS/MIGRATION_PANIC_CLAUSE_TKNCDE.md",
+        "{{$vault_root}}/10_WORKFLOWS_N8N_MCP/DAILY_SNAPSHOT_WORKFLOW_SPEC.md"
+      ],
+      "destination": "{{$snapshot_root}}/01_active_current_state/"
+    },
+    {
+      "id": "create_source_manifest",
+      "type": "script.python",
+      "script": "scan copied files; record path, size, modified time, sha256, source_rank, status"
+    },
+    {
+      "id": "create_quarantine_index",
+      "type": "script.python",
+      "script": "list quarantine files by name/hash only; do not copy raw quarantine bodies unless explicitly enabled"
+    },
+    {
+      "id": "write_checksums",
+      "type": "script.shell",
+      "command": "find {{$snapshot_root}} -type f -print0 | sort -z | xargs -0 shasum -a 256 > {{$snapshot_root}}/00_manifest/checksums.sha256"
+    },
+    {
+      "id": "zip_snapshot",
+      "type": "script.shell",
+      "command": "cd {{$snapshot_root}}/.. && zip -r {{$snapshot_date}}_hap_continuity_snapshot.zip {{$snapshot_date}}"
+    }
+  ],
+  "failure_handlers": [
+    {"when": "missing_priority_file", "action": "continue_with_warning"},
+    {"when": "checksum_failure", "action": "stop_before_remote_upload"},
+    {"when": "drive_upload_failure", "action": "keep_local_snapshot"},
+    {"when": "secrets_detected", "action": "block_git_commit_and_remote_upload"}
+  ]
+}

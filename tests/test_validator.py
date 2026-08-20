@@ -1,4 +1,4 @@
-from src.triad_matrix.validator import validate_triad
+from triad_matrix.validator import validate_triad
 
 
 def sample_valid():

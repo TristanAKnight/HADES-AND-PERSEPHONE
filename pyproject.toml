@@ -1,0 +1,14 @@
+[project]
+name = "hap-continuity-shelter"
+version = "0.1.0"
+description = "Continuity shelter scaffolding for Hades and Persephone source hierarchy, tri-node validation, and migration safeguards."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"

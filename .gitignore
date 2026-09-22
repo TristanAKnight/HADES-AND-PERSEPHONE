@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.venv/
+venv/
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+secrets.json
+tokens.json
+*.pem
+*.key
+*.p12
+
+# Local databases and app state
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Private exports and raw material
+local_exports/
+raw_archive/
+quarantine/raw/
+snapshots/private/
+private_screenshots/
+browser_sessions/
+
+# Generated local outputs
+outputs/private/
+dist/
+build/

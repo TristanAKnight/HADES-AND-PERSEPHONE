@@ -47,3 +47,14 @@ workflows/
 ## First rule
 
 Current live user instruction and active project constraints outrank older archive material, stale Drive records, summaries, converted JSON, and model inference.
+
+
+## OpenAI proxy
+
+A minimal Vercel Function is available at `api/respond.js`.
+
+Required Vercel environment variables:
+- `OPENAI_API_KEY`
+- `PROXY_SECRET`
+
+The function forwards authenticated Responses API payloads without rewriting prompt or response content and preserves upstream streaming behavior.
